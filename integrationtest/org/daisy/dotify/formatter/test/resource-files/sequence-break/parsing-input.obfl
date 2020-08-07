@@ -1,0 +1,56 @@
+<obfl xmlns="http://www.daisy.org/ns/2011/obfl" version="2011-1" xml:lang="en">
+    <meta xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:title>Parsing of sequence breaks test</dc:title>
+        <dc:description>Tests the parsing of sequence breaks</dc:description>
+    </meta>
+    <layout-master name="main" page-width="10" page-height="6" duplex="false">
+        <default-template>
+            <header/>
+            <footer/>
+        </default-template>
+    </layout-master>
+    <table-of-contents name="toc">
+        <toc-block/>
+    </table-of-contents>
+    <volume-template sheets-in-volume-max="5" use-when="(= $volume 1)">
+        <pre-content>
+            <dynamic-sequence master="main" break-before="page" break-after="page">
+                <block>⠤⠤⠤</block>
+            </dynamic-sequence>
+            <sequence master="main" break-before="page" break-after="page">
+                <block>⠤⠤⠤</block>
+            </sequence>
+        </pre-content>
+        <post-content>
+            <toc-sequence toc="toc" range="document" master="main" break-before="page" break-after="page"/>
+        </post-content>
+    </volume-template>
+    <volume-template sheets-in-volume-max="5" use-when="(> $volume 1)">
+        <pre-content>
+            <dynamic-sequence master="main" break-before="sheet" break-after="sheet">
+                <block>⠤⠤⠤</block>
+            </dynamic-sequence>
+            <sequence master="main" break-before="sheet" break-after="sheet">
+                <block>⠤⠤⠤</block>
+            </sequence>
+        </pre-content>
+        <post-content>
+            <toc-sequence toc="toc" range="document" master="main" break-before="sheet" break-after="sheet"/>
+        </post-content>
+    </volume-template>
+    <sequence master="main">
+        <block>⠤⠤⠤</block>
+    </sequence>
+    <sequence master="main" break-before="auto" break-after="page">
+        <block>⠤⠤⠤</block>
+    </sequence>
+    <sequence master="main" break-before="page" break-after="sheet">
+        <block>⠤⠤⠤</block>
+    </sequence>
+    <sequence master="main" break-before="sheet" break-after="volume">
+        <block>⠤⠤⠤</block>
+    </sequence>
+    <sequence master="main" break-before="volume" break-after="auto">
+        <block>⠤⠤⠤</block>
+    </sequence>
+</obfl>

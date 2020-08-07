@@ -1,6 +1,6 @@
 package org.daisy.dotify.formatter.impl;
 
-import org.daisy.dotify.api.formatter.SequenceProperties.SequenceBreakBefore;
+import org.daisy.dotify.api.formatter.SequenceProperties.SequenceBreak;
 import org.daisy.dotify.common.splitter.SplitPoint;
 import org.daisy.dotify.common.splitter.SplitPointCost;
 import org.daisy.dotify.common.splitter.SplitPointDataSource;
@@ -324,7 +324,7 @@ public class VolumeProvider {
         List<BlockSequence> currentGroup = new ArrayList<>();
         volGroups.add(currentGroup);
         for (BlockSequence bs : fs) {
-            if (bs.getSequenceProperties().getBreakBeforeType() == SequenceBreakBefore.VOLUME) {
+            if (bs.getSequenceProperties().getBreakBeforeType() == SequenceBreak.VOLUME) {
                 currentGroup = new ArrayList<>();
                 volGroups.add(currentGroup);
             }

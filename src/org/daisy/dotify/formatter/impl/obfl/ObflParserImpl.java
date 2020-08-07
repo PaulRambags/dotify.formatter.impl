@@ -661,7 +661,11 @@ public class ObflParserImpl extends XMLParserBase implements ObflParser {
         }
         String breakBefore = getAttr(event, "break-before");
         if (breakBefore != null) {
-            builder.breakBefore(SequenceProperties.SequenceBreakBefore.valueOf(breakBefore.toUpperCase()));
+            builder.breakBefore(SequenceProperties.SequenceBreak.valueOf(breakBefore.toUpperCase()));
+        }
+        String breakAfter = getAttr(event, "break-after");
+        if (breakAfter != null) {
+            builder.breakAfter(SequenceProperties.SequenceBreak.valueOf(breakAfter.toUpperCase()));
         }
         String pageNumberCounter = getAttr(event, "page-number-counter");
         if (pageNumberCounter != null) {
