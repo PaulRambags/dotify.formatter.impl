@@ -16,13 +16,25 @@ import java.io.IOException;
 public class SequenceBreakTest extends AbstractFormatterEngineTest {
 
     @Test
-    public void testParsing() throws
+    public void parsingTest() throws
             LayoutEngineException,
             IOException,
             PagedMediaWriterConfigurationException {
         testPEF(
             "resource-files/sequence-break/parsing-input.obfl",
             "resource-files/sequence-break/parsing-expected.pef",
+            true
+        );
+    }
+
+    @Test
+    public void breakBeforePage1Test() throws
+            LayoutEngineException,
+            IOException,
+            PagedMediaWriterConfigurationException {
+        testPEF(
+            "resource-files/sequence-break/break-before-page-1-input.obfl",
+            "resource-files/sequence-break/break-before-page-1-expected.pef",
             true
         );
     }

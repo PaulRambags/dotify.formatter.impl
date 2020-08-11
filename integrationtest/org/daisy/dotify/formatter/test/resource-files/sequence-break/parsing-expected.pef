@@ -4,7 +4,7 @@
         <meta xmlns:dc="http://purl.org/dc/elements/1.1/">
             <dc:format>application/x-pef+xml</dc:format>
             <dc:identifier>identifier?</dc:identifier>
-            <dc:date>2020-08-07</dc:date>
+            <dc:date>2020-08-11</dc:date>
             <dc:title>Parsing of sequence breaks test</dc:title>
             <dc:description>Tests the parsing of sequence breaks</dc:description>
         </meta>
@@ -25,8 +25,6 @@
                 <page>
                     <row>⠤⠤⠤</row>
                 </page>
-            </section>
-            <section>
                 <page>
                     <row>⠤⠤⠤</row>
                 </page>

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.daisy.dotify.api.formatter.SequenceProperties.SequenceBreak;
 
 /**
  * Provides a data source for {@link Sheet}s. Given a list of {@link BlockSequence}s, sheets are
@@ -260,7 +261,11 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
                     seqId,
                     cbl
                 );
-                sectionProperties = bs.getLayoutMaster().newSectionProperties();
+                // when new section properties are created, automatically a new
+                // section is started
+                if (sectionProperties == null || bs.getSequenceProperties().getBreakBeforeType() != SequenceBreak.PAGE) {
+                    sectionProperties = bs.getLayoutMaster().newSectionProperties();
+                }
                 s = null;
                 si = null;
                 sheetIndex = 0;

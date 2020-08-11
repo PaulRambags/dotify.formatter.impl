@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pef version="2008-1" xmlns="http://www.daisy.org/ns/2008/pef">
+    <head>
+        <meta xmlns:dc="http://purl.org/dc/elements/1.1/">
+            <dc:format>application/x-pef+xml</dc:format>
+            <dc:identifier>identifier?</dc:identifier>
+            <dc:date>2020-08-10</dc:date>
+            <dc:title>break-before=&quot;page&quot; (1)</dc:title>
+            <dc:description>Tests a scenario with two content sequences and the second one has break-before=&quot;page&quot;</dc:description>
+        </meta>
+    </head>
+    <body>
+        <volume cols="10" rows="6" rowgap="0" duplex="false">
+            <section>
+                <page>
+                    <row>⠤⠤⠤</row>
+                </page>
+                <page>
+                    <row>⠤⠤⠤</row>
+                </page>
+            </section>
+        </volume>
+    </body>
+</pef>
