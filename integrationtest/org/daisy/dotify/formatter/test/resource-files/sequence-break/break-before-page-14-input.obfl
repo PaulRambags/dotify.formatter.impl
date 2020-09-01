@@ -18,4 +18,7 @@
     <sequence master="main" break-before="page">
         <block>⠤⠤⠤</block>
     </sequence>
+    <sequence master="main">
+        <block>⠤⠤⠤</block>
+    </sequence>
 </obfl>

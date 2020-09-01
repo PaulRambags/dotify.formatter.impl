@@ -78,7 +78,7 @@ public class VolumeProvider {
     private final LazyFormatterContext context;
 
     /**
-     * Creates a new volume provider with the specifed parameters.
+     * Creates a new volume provider with the specified parameters.
      *
      * @param blocks          the block sequences
      * @param volumeTemplates volume templates
@@ -115,7 +115,8 @@ public class VolumeProvider {
             // make a preliminary calculation based on a contents only
             Iterable<SheetDataSource> allUnits = prepareToPaginateWithVolumeGroups(
                 blocks,
-                new DefaultContext.Builder(crh).space(Space.BODY).build()
+                new DefaultContext.Builder(crh).space(Space.BODY).build(),
+                false
             );
             int volCount = 0;
             for (SheetDataSource data : allUnits) {
@@ -130,7 +131,8 @@ public class VolumeProvider {
         }
         Iterable<SheetDataSource> allUnits = prepareToPaginateWithVolumeGroups(
             blocks,
-            new DefaultContext.Builder(crh).space(Space.BODY).build()
+            new DefaultContext.Builder(crh).space(Space.BODY).build(),
+            false
         );
         int i = 0;
         for (SheetDataSource unit : allUnits) {
@@ -151,15 +153,31 @@ public class VolumeProvider {
         currentVolumeNumber++;
         VolumeImpl volume = new VolumeImpl(crh.getOverhead(currentVolumeNumber));
         ArrayList<AnchorData> ad = new ArrayList<>();
-        volume.setPreVolData(updateVolumeContents(currentVolumeNumber, ad, true));
-        volume.setBody(nextBodyContents(currentVolumeNumber, volume.getOverhead().total(), ad));
+        List<Sheet> sheets = new ArrayList<>();
+        boolean previousPartHasEmptyLastPage = false;
+
+        List<Sheet> preVolSheets = updateVolumeContents(currentVolumeNumber, ad, true, previousPartHasEmptyLastPage);
+        volume.setPreVolSize(preVolSheets.size());
+        sheets.addAll(preVolSheets);
+        previousPartHasEmptyLastPage = SectionBuilder.hasEmptyLastPage(sheets);
+                
+        List<Sheet> contentSheets = nextBodyContents(currentVolumeNumber, volume.getOverhead().total(), ad, previousPartHasEmptyLastPage);
+        volume.setBodyVolSize(contentSheets.size());
+        sheets.addAll(contentSheets);
+        previousPartHasEmptyLastPage = SectionBuilder.hasEmptyLastPage(sheets);
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Sheets  in volume " + currentVolumeNumber + ": " + (volume.getVolumeSize()) +
                     ", content:" + volume.getBodySize() +
                     ", overhead:" + volume.getOverhead());
         }
-        volume.setPostVolData(updateVolumeContents(currentVolumeNumber, ad, false));
+        
+        List<Sheet> postVolSheets = updateVolumeContents(currentVolumeNumber, ad, false, previousPartHasEmptyLastPage);
+        volume.setPostVolSize(postVolSheets.size());
+        sheets.addAll(postVolSheets);
+
+        volume.setSections(SectionBuilder.getSections(sheets));
+        
         crh.setSheetsInVolume(currentVolumeNumber, volume.getBodySize() + volume.getOverhead().total());
         //crh.setPagesInVolume(i, value);
         crh.setAnchorData(currentVolumeNumber, ad);
@@ -175,8 +193,9 @@ public class VolumeProvider {
      * @param ad       the anchor data
      * @return returns the contents of the next volume
      */
-    private SectionBuilder nextBodyContents(int volumeNumber, final int overhead, ArrayList<AnchorData> ad) {
+    private List<Sheet> nextBodyContents(int volumeNumber, final int overhead, ArrayList<AnchorData> ad, boolean previousPartHasEmptyLastPage) {
         groups.currentGroup().setOverheadCount(groups.currentGroup().getOverheadCount() + overhead);
+        groups.currentGroup().getUnits().setPreviousPartHasEmptyLastPage(previousPartHasEmptyLastPage);
         final int splitterMax = splitterLimit.getSplitterLimit(volumeNumber);
         final int targetSheetsInVolume = (groups.lastInGroup() ? splitterMax : groups.sheetsInCurrentVolume());
         //Not using lambda for now, because it's noticeably slower.
@@ -234,7 +253,6 @@ public class VolumeProvider {
         crh.setVolumeScope(volumeNumber, pageIndex, pageIndex + pageCount);
 
         pageIndex += pageCount;
-        SectionBuilder sb = new SectionBuilder();
         boolean atFirstPageOfContents = true;
         for (Sheet sheet : contents) {
             for (PageImpl p : sheet.getPages()) {
@@ -255,14 +273,13 @@ public class VolumeProvider {
                 }
                 atFirstPageOfContents = false;
             }
-            sb.addSheet(sheet);
         }
         groups.currentGroup().setSheetCount(groups.currentGroup().getSheetCount() + contents.size());
         groups.nextVolume();
-        return sb;
+        return contents;
     }
 
-    private SectionBuilder updateVolumeContents(int volumeNumber, ArrayList<AnchorData> ad, boolean pre) {
+    private List<Sheet> updateVolumeContents(int volumeNumber, ArrayList<AnchorData> ad, boolean pre, boolean previousPartHasEmptyLastPage) {
         DefaultContext c = new DefaultContext.Builder(crh)
                 .currentVolume(volumeNumber)
                 .space(pre ? Space.PRE_CONTENT : Space.POST_CONTENT)
@@ -280,8 +297,7 @@ public class VolumeProvider {
                     break;
                 }
             }
-            List<Sheet> ret = prepareToPaginatePrePostVolumeContent(ib, c).getRemaining();
-            SectionBuilder sb = new SectionBuilder();
+            List<Sheet> ret = prepareToPaginatePrePostVolumeContent(ib, c, previousPartHasEmptyLastPage).getRemaining();
             for (Sheet ps : ret) {
                 for (PageImpl p : ps.getPages()) {
                     for (String id : p.getIdentifiers()) {
@@ -291,9 +307,8 @@ public class VolumeProvider {
                         ad.add(new AnchorData(p.getAnchors(), p.getPageNumber()));
                     }
                 }
-                sb.addSheet(ps);
             }
-            return sb;
+            return ret;
         } catch (PaginatorException e) {
             return null;
         }
@@ -304,9 +319,10 @@ public class VolumeProvider {
      */
     private SheetDataSource prepareToPaginatePrePostVolumeContent(
         List<BlockSequence> fs,
-        DefaultContext rcontext
+        DefaultContext rcontext,
+        boolean previousPartHasEmptyLastPage
     ) throws PaginatorException {
-        return prepareToPaginate(new PageCounter(), rcontext, null, fs);
+        return prepareToPaginate(new PageCounter(), rcontext, null, fs, previousPartHasEmptyLastPage);
     }
 
     /**
@@ -318,7 +334,8 @@ public class VolumeProvider {
      */
     private Iterable<SheetDataSource> prepareToPaginateWithVolumeGroups(
         List<BlockSequence> fs,
-        DefaultContext rcontext
+        DefaultContext rcontext,
+        boolean previousPartHasEmptyLastPage
     ) {
         List<List<BlockSequence>> volGroups = new ArrayList<>();
         List<BlockSequence> currentGroup = new ArrayList<>();
@@ -336,7 +353,7 @@ public class VolumeProvider {
             @Override
             public Iterator<SheetDataSource> iterator() {
                 try {
-                    return prepareToPaginateWithVolumeGroups(pageCounter, rcontext, volGroups).iterator();
+                    return prepareToPaginateWithVolumeGroups(pageCounter, rcontext, volGroups, previousPartHasEmptyLastPage).iterator();
                 } catch (PaginatorException e) {
                     throw new RuntimeException(e);
                 }
@@ -351,12 +368,14 @@ public class VolumeProvider {
     private List<SheetDataSource> prepareToPaginateWithVolumeGroups(
         PageCounter pageCounter,
         DefaultContext rcontext,
-        Iterable<List<BlockSequence>> volGroups
+        Iterable<List<BlockSequence>> volGroups,
+        boolean previousPartHasEmptyLastPage
     ) throws PaginatorException {
         List<SheetDataSource> ret = new ArrayList<>();
         int i = 0;
         for (List<BlockSequence> glist : volGroups) {
-            ret.add(prepareToPaginate(pageCounter, rcontext, i++, glist));
+            ret.add(prepareToPaginate(pageCounter, rcontext, i++, glist, previousPartHasEmptyLastPage));
+            previousPartHasEmptyLastPage = false;
         }
         return ret;
     }
@@ -368,9 +387,10 @@ public class VolumeProvider {
         PageCounter pageCounter,
         DefaultContext rcontext,
         Integer volumeGroup,
-        List<BlockSequence> seqs
+        List<BlockSequence> seqs,
+        boolean previousPartHasEmptyLastPage
     ) throws PaginatorException {
-        return new SheetDataSource(pageCounter, context.getFormatterContext(), rcontext, volumeGroup, seqs);
+        return new SheetDataSource(pageCounter, context.getFormatterContext(), rcontext, volumeGroup, seqs, previousPartHasEmptyLastPage);
     }
 
     /**

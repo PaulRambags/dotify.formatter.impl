@@ -1,0 +1,29 @@
+<obfl xmlns="http://www.daisy.org/ns/2011/obfl" version="2011-1" xml:lang="en">
+    <meta xmlns:dc="http://purl.org/dc/elements/1.1/">
+        <dc:title>break-before page 2</dc:title>
+        <dc:description>Tests a scenario where a TOC sequence is followed by a
+            content sequence with break-before="page"</dc:description>
+    </meta>
+    <layout-master name="main" page-width="10" page-height="6" duplex="true">
+        <default-template>
+			<header>
+				<field><current-page/></field>
+			</header>
+            <footer/>
+        </default-template>
+    </layout-master>
+    <volume-template sheets-in-volume-max="5">
+        <pre-content>
+            <toc-sequence toc="toc" range="document" master="main" page-number-counter="pnc"/>
+        </pre-content>
+        <post-content/>
+    </volume-template>
+    <table-of-contents name="toc">
+		<toc-block>
+			<toc-entry ref-id="block">⠤⠤</toc-entry>
+		</toc-block>
+    </table-of-contents>
+    <sequence master="main" break-before="page" page-number-counter="pnc">
+        <block id="block">⠤⠤⠤</block>
+    </sequence>
+</obfl>

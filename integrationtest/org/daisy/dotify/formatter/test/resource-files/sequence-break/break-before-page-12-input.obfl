@@ -12,9 +12,6 @@
             <footer/>
         </default-template>
     </layout-master>
-    <sequence master="main">
-        <block>⠤⠤⠤</block>
-    </sequence>
     <sequence master="main" break-before="page">
         <block>⠤⠤⠤</block>
     </sequence>

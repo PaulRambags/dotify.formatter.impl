@@ -1,6 +1,6 @@
 package org.daisy.dotify.formatter.impl.sheet;
 
-import org.daisy.dotify.api.writer.SectionProperties;
+import org.daisy.dotify.api.writer.SectionPropertiesIntermediate;
 import org.daisy.dotify.common.splitter.SplitPointUnit;
 import org.daisy.dotify.formatter.impl.page.PageImpl;
 import org.daisy.dotify.formatter.impl.search.VolumeKeepPriority;
@@ -22,13 +22,13 @@ import java.util.Objects;
  */
 public class Sheet implements SplitPointUnit {
     private static final List<String> SUPPLEMENTS = Collections.unmodifiableList(new ArrayList<String>());
-    private final SectionProperties master;
+    private final SectionPropertiesIntermediate master;
     private final List<PageImpl> pages;
     private final boolean breakable, skippable, collapsible;
     private final VolumeKeepPriority avoidVolumeBreakAfterPriority;
 
     static class Builder {
-        private final SectionProperties sectionProperties;
+        private final SectionPropertiesIntermediate sectionProperties;
         private final List<PageImpl> pages;
         private boolean breakable = false;
         private VolumeKeepPriority avoidVolumeBreakAfterPriority = VolumeKeepPriority.empty();
@@ -40,7 +40,7 @@ public class Sheet implements SplitPointUnit {
          *              section separator, meaning that each new section MUST have a separate
          *              object even if the data is the same.
          */
-        Builder(SectionProperties props) {
+        Builder(SectionPropertiesIntermediate props) {
             this.sectionProperties = props;
             this.pages = new ArrayList<>();
         }
@@ -93,7 +93,7 @@ public class Sheet implements SplitPointUnit {
         this.collapsible = pages.isEmpty();
     }
 
-    public SectionProperties getSectionProperties() {
+    public SectionPropertiesIntermediate getSectionProperties() {
         return master;
     }
 

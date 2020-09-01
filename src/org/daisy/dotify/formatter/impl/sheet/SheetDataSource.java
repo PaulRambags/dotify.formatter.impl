@@ -1,7 +1,7 @@
 package org.daisy.dotify.formatter.impl.sheet;
 
 import org.daisy.dotify.api.formatter.TransitionBuilderProperties.ApplicationRange;
-import org.daisy.dotify.api.writer.SectionProperties;
+import org.daisy.dotify.api.writer.SectionPropertiesIntermediate;
 import org.daisy.dotify.common.splitter.DefaultSplitResult;
 import org.daisy.dotify.common.splitter.SplitPointDataSource;
 import org.daisy.dotify.common.splitter.SplitResult;
@@ -56,12 +56,13 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
     private final Integer volumeGroup;
     private final List<BlockSequence> seqsIterator;
     private final int sheetOffset;
+    private boolean previousPartHasEmptyLastPage;
     //Local state
     private int seqsIndex;
     private SequenceId seqId;
     private PageSequenceBuilder2 psb;
     private int psbCurStartIndex; // index of first page of current psb in current volume
-    private SectionProperties sectionProperties;
+    private SectionPropertiesIntermediate sectionProperties;
     private int sheetIndex;
     private int pageIndex;
     private String counter;
@@ -80,13 +81,15 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
         FormatterContext context,
         DefaultContext rcontext,
         Integer volumeGroup,
-        List<BlockSequence> seqsIterator
+        List<BlockSequence> seqsIterator,
+        boolean previousPartHasEmptyPage
     ) {
         this.pageCounter = pageCounter;
         this.context = context;
         this.rcontext = rcontext;
         this.volumeGroup = volumeGroup;
         this.seqsIterator = seqsIterator;
+        this.previousPartHasEmptyLastPage = previousPartHasEmptyPage;
         this.sheetBuffer = new ArrayList<>();
         this.volBreakAllowed = true;
         this.sheetOffset = 0;
@@ -126,6 +129,7 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
         this.rcontext = template.rcontext;
         this.volumeGroup = template.volumeGroup;
         this.seqsIterator = template.seqsIterator;
+        this.previousPartHasEmptyLastPage = template.previousPartHasEmptyLastPage;
         this.seqsIndex = template.seqsIndex;
         this.seqId = template.seqId;
         this.psb = tail ? template.psb : PageSequenceBuilder2.copyUnlessNull(template.psb);
@@ -195,6 +199,10 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
         }
     }
 
+    public void setPreviousPartHasEmptyLastPage(boolean previousPartHasEmptyLastPage) {
+        this.previousPartHasEmptyLastPage = previousPartHasEmptyLastPage;
+    }
+    
     /**
      * Ensures that there are at least index elements in the buffer.
      * When index is -1 this method always returns false.
@@ -242,6 +250,13 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
                 } else {
                     initialPageOffset = pageCounter.getDefaultPageOffset();
                 }
+                boolean keepWithPreviousSection = bs.getSequenceProperties().getBreakBeforeType() == SequenceBreak.PAGE;
+                // when new section properties are created, automatically a new
+                // section is started
+                sectionProperties = bs.getLayoutMaster().newSectionPropertiesIntermediate(keepWithPreviousSection);
+                if (sectionProperties.duplex() && keepWithPreviousSection && (!sheetBuffer.isEmpty() || previousPartHasEmptyLastPage)) {
+                    initialPageOffset --;
+                }
                 seqId = new SequenceId(
                     seqsIndex,
                     new DocumentSpace(rcontext.getSpace(), rcontext.getCurrentVolume()),
@@ -261,11 +276,6 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
                     seqId,
                     cbl
                 );
-                // when new section properties are created, automatically a new
-                // section is started
-                if (sectionProperties == null || bs.getSequenceProperties().getBreakBeforeType() != SequenceBreak.PAGE) {
-                    sectionProperties = bs.getLayoutMaster().newSectionProperties();
-                }
                 s = null;
                 si = null;
                 sheetIndex = 0;
@@ -477,7 +487,7 @@ public class SheetDataSource implements SplitPointDataSource<Sheet, SheetDataSou
 
     @Override
     public SheetDataSource createEmpty() {
-        return new SheetDataSource(pageCounter, context, rcontext, volumeGroup, Collections.emptyList());
+        return new SheetDataSource(pageCounter, context, rcontext, volumeGroup, Collections.emptyList(), false);
     }
 
     @Override

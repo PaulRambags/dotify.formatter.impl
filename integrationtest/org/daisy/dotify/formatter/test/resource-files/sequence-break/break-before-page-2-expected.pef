@@ -4,9 +4,9 @@
         <meta xmlns:dc="http://purl.org/dc/elements/1.1/">
             <dc:format>application/x-pef+xml</dc:format>
             <dc:identifier>identifier?</dc:identifier>
-            <dc:date>2020-08-10</dc:date>
-            <dc:title>break-before page 1</dc:title>
-            <dc:description>Tests a scenario with two content sequences and the second one has break-before=&quot;page&quot;</dc:description>
+            <dc:date>2020-08-11</dc:date>
+            <dc:title>break-before page 2</dc:title>
+            <dc:description>Tests a scenario where a TOC sequence is followed by a content sequence with break-before=&quot;page&quot;</dc:description>
         </meta>
     </head>
     <body>
@@ -14,7 +14,7 @@
             <section>
                 <page>
                     <row>⠼⠁</row>
-                    <row>⠤⠤⠤</row>
+                    <row>⠤⠤</row>
                 </page>
                 <page>
                     <row>⠼⠃</row>

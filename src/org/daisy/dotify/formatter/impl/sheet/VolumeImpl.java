@@ -4,7 +4,6 @@ import org.daisy.dotify.formatter.impl.common.Section;
 import org.daisy.dotify.formatter.impl.common.Volume;
 import org.daisy.dotify.formatter.impl.search.Overhead;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,9 +12,7 @@ import java.util.List;
  * @author Joel Håkansson
  */
 public class VolumeImpl implements Volume {
-    private List<Section> body;
-    private List<Section> preVolData;
-    private List<Section> postVolData;
+    private List<? extends Section> sections;
     private Overhead overhead;
     private int bodyVolSize;
 
@@ -24,21 +21,23 @@ public class VolumeImpl implements Volume {
         this.bodyVolSize = 0;
     }
 
-    public void setBody(SectionBuilder body) {
-        bodyVolSize = body.getSheetCount();
-        this.body = body.getSections();
+    public void setBodyVolSize(int sheetCount) {
+        this.bodyVolSize = sheetCount;
     }
 
-    public void setPreVolData(SectionBuilder preVolData) {
+    public void setPreVolSize(int sheetCount) {
         //use the highest value to avoid oscillation
-        overhead = overhead.withPreContentSize(Math.max(overhead.getPreContentSize(), preVolData.getSheetCount()));
-        this.preVolData = preVolData.getSections();
+        overhead = overhead.withPreContentSize(Math.max(overhead.getPreContentSize(), sheetCount));
     }
-
-    public void setPostVolData(SectionBuilder postVolData) {
+    
+    public void setPostVolSize(int sheetCount) {
         //use the highest value to avoid oscillation
-        overhead = overhead.withPostContentSize(Math.max(overhead.getPostContentSize(), postVolData.getSheetCount()));
-        this.postVolData = postVolData.getSections();
+        overhead = overhead.withPostContentSize(Math.max(overhead.getPostContentSize(), sheetCount));
+    }
+    
+    @Override
+    public void setSections(List<? extends Section> sections) {
+        this.sections = sections;
     }
 
     public Overhead getOverhead() {
@@ -55,11 +54,7 @@ public class VolumeImpl implements Volume {
 
     @Override
     public Iterable<? extends Section> getSections() {
-        List<Section> contents = new ArrayList<>();
-        contents.addAll(preVolData);
-        contents.addAll(body);
-        contents.addAll(postVolData);
-        return contents;
+        return sections;
     }
 
 }

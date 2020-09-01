@@ -8,6 +8,7 @@ import org.daisy.dotify.api.formatter.PageAreaProperties;
 import org.daisy.dotify.api.formatter.PageTemplateBuilder;
 import org.daisy.dotify.api.translator.TextBorderStyle;
 import org.daisy.dotify.api.writer.SectionProperties;
+import org.daisy.dotify.api.writer.SectionPropertiesIntermediate;
 import org.daisy.dotify.formatter.impl.common.FormatterCoreContext;
 
 import java.util.ArrayList;
@@ -38,8 +39,8 @@ public class LayoutMaster implements LayoutMasterBuilder, SectionProperties, Bor
      *
      * @return returns a new object
      */
-    public SectionProperties newSectionProperties() {
-        return new SectionProperties() {
+    public SectionPropertiesIntermediate newSectionPropertiesIntermediate(boolean keepWithPreviousSection) {
+        return new SectionPropertiesIntermediate() {
 
             @Override
             public int getPageWidth() {
@@ -60,6 +61,12 @@ public class LayoutMaster implements LayoutMasterBuilder, SectionProperties, Bor
             public boolean duplex() {
                 return props.duplex();
             }
+
+            @Override
+            public boolean keepWithPreviousSection() {
+                return keepWithPreviousSection;
+            }
+
         };
     }
 

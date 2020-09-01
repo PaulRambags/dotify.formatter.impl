@@ -4,7 +4,7 @@
         <dc:description>Tests a scenario with two content sequences and the
             second one has break-before="page"</dc:description>
     </meta>
-    <layout-master name="main" page-width="10" page-height="6" duplex="true">
+    <layout-master name="main" page-width="10" page-height="6" duplex="false">
         <default-template>
 			<header>
 				<field><current-page/></field>
